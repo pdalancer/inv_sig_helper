@@ -301,6 +301,8 @@ pub async fn fetch_update(state: Arc<GlobalState>) -> Result<(), FetchUpdateStat
             .unwrap()
             .as_str();
 
+        debug!("helper_object_name: {}", helper_object_name);
+
         let mut helper_object_body_regex_str = String::new();
         helper_object_body_regex_str += "(var ";
         helper_object_body_regex_str += &helper_object_name.replace("$", "\\$");
