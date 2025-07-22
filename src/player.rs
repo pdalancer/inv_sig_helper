@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::SystemTime};
+use std::{sync::Arc, time::SystemTime, env};
 use log::{debug, error, info, warn};
 use regex::Regex;
 
@@ -6,6 +6,7 @@ use crate::{
     consts::{
         NSIG_FUNCTION_ARRAYS, NSIG_FUNCTION_ENDINGS, NSIG_FUNCTION_NAME, REGEX_HELPER_OBJ_NAME,
         REGEX_PLAYER_ID, REGEX_SIGNATURE_FUNCTION_PATTERNS, REGEX_SIGNATURE_TIMESTAMP, TEST_YOUTUBE_VIDEO,
+        ENV_PLAYER_ID
     },
     jobs::GlobalState,
 };
@@ -18,6 +19,14 @@ pub enum FetchUpdateStatus {
     CannotFetchPlayerJS,
     NsigRegexCompileFailed,
     PlayerAlreadyUpdated,
+}
+
+fn player_id_custom() -> String {
+    info!("Trying to get custom player ID using env var: {}", ENV_PLAYER_ID);
+    match env::var(ENV_PLAYER_ID) {
+        Ok(val) => val,
+        Err(_) => String::from("0"),
+    }
 }
 
 fn extract_player_js_global_var(jscode: &str) -> Option<(String, String, String)> {
@@ -100,7 +109,7 @@ pub async fn fetch_update(state: Arc<GlobalState>) -> Result<(), FetchUpdateStat
         None => return Err(FetchUpdateStatus::CannotMatchPlayerID),
     };
 
-    let player_id: u32 = u32::from_str_radix(player_id_str, 16).unwrap();
+    let mut player_id: u32 = u32::from_str_radix(player_id_str, 16).unwrap();
 
     let mut current_player_info = global_state.player_info.lock().await;
     let current_player_id = current_player_info.player_id;
@@ -111,6 +120,18 @@ pub async fn fetch_update(state: Arc<GlobalState>) -> Result<(), FetchUpdateStat
     }
     // release the mutex for other tasks
     drop(current_player_info);
+
+    let custom_id = player_id_custom();
+    info!("custom_id: {}", custom_id);
+    if !custom_id.is_empty() && custom_id != "0" {
+        info!("Using custom player ID: {}", custom_id);
+        player_id = u32::from_str_radix(&custom_id, 16).unwrap_or_else(|_| {
+            warn!("Failed to parse custom ID as hex: {}", custom_id);
+            0
+        });
+    } else {
+        info!("Using detected player ID: {}", player_id);
+    }
     
     // Download the player script
     let player_js_url: String = format!(

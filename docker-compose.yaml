@@ -11,6 +11,7 @@ services:
       - 127.0.0.1:12999:12999
     environment:
       - RUST_LOG=info
+      - PLAYER_ID=73381ccc
     restart: unless-stopped
     cap_drop:
       - ALL

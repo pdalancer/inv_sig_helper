@@ -33,3 +33,5 @@ pub static REGEX_HELPER_OBJ_NAME: &Lazy<Regex> = regex!(";([A-Za-z0-9_\\$]{2,})(
 
 pub static NSIG_FUNCTION_NAME: &str = "decrypt_nsig";
 pub static SIG_FUNCTION_NAME: &str = "decrypt_sig";
+
+pub static ENV_PLAYER_ID: &str = "PLAYER_ID";

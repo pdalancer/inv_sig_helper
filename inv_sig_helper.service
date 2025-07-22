@@ -10,6 +10,8 @@ Type=simple
 User=invidious
 Group=invidious
 
+Environment="PLAYER_ID=363db69b"
+
 # allow only the strict necessary since this service runs untrusted code directly from Google
 CapabilityBoundingSet=~CAP_SETUID CAP_SETGID CAP_SETPCAP
 CapabilityBoundingSet=~CAP_SYS_ADMIN
